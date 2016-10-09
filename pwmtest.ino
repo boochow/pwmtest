@@ -10,7 +10,7 @@ Arduboy2 arduboy;
 PWMDAC_CREATE_WAVETABLE(wave, PWMDAC_SQUARE_WAVE);
 
 // {wavetableArray, {release, sustain, decay, attack}}
-PROGMEM const Instrument instrument = {wave, {4, 192, 5, 0}};
+PROGMEM const Instrument instrument = {wave, {2, 128, 4, 0}};
 
 PWMDAC_CREATE_INSTANCE(&instrument);
 
