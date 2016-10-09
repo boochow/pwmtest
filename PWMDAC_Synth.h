@@ -287,9 +287,9 @@ class VoiceStatus {
 #else
 
 #if PWMDAC_OUTPUT_PIN == 6 || PWMDAC_OUTPUT_PIN == 5
- In Arduino, TIMER0 has been reserved by wiring.c in Arduino core,
-   so defining PWMDAC_OUTPUT_PIN = 5 or 6 causes compile error
-   (multiple definition of `__vector_16')
+// In Arduino, TIMER0 has been reserved by wiring.c in Arduino core,
+//   so defining PWMDAC_OUTPUT_PIN = 5 or 6 causes compile error
+//   (multiple definition of `__vector_16')
 #define PWMDAC_USE_TIMER0
 #define PWMDAC_OVF_vect TIMER0_OVF_vect
 
