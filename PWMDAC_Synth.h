@@ -29,11 +29,12 @@
 #ifndef PWMDAC_OUTPUT_PIN
 #define PWMDAC_OUTPUT_PIN 3
 #endif
+
 #ifndef PWMDAC_NOTE_A_FREQUENCY
 #define PWMDAC_NOTE_A_FREQUENCY 440 // [Hz]
 #endif
 #ifndef PWMDAC_POLYPHONY
-#define PWMDAC_POLYPHONY 6
+#define PWMDAC_POLYPHONY 4
 #endif
 
 
@@ -277,17 +278,27 @@ class VoiceStatus {
     }
 };
 
+#if defined(__AVR_ATmega32U4__)
+
+#define PWMDAC_USE_TIMER3
+#define PWMDAC_OVF_vect TIMER3_OVF_vect
+#define PWMDAC_OCR OCR3A
+
+#else
+
 #if PWMDAC_OUTPUT_PIN == 6 || PWMDAC_OUTPUT_PIN == 5
-// In Arduino, TIMER0 has been reserved by wiring.c in Arduino core,
-//   so defining PWMDAC_OUTPUT_PIN = 5 or 6 causes compile error
-//   (multiple definition of `__vector_16')
+ In Arduino, TIMER0 has been reserved by wiring.c in Arduino core,
+   so defining PWMDAC_OUTPUT_PIN = 5 or 6 causes compile error
+   (multiple definition of `__vector_16')
 #define PWMDAC_USE_TIMER0
 #define PWMDAC_OVF_vect TIMER0_OVF_vect
+
 #if PWMDAC_OUTPUT_PIN == 6
 #define PWMDAC_OCR OCR0A
 #else
 #define PWMDAC_OCR OCR0B
 #endif
+
 #elif PWMDAC_OUTPUT_PIN == 9 || PWMDAC_OUTPUT_PIN == 10
 #define PWMDAC_USE_TIMER1
 #define PWMDAC_OVF_vect TIMER1_OVF_vect
@@ -306,10 +317,33 @@ class VoiceStatus {
 #endif
 #endif
 
+#endif
+
 class PWMDACSynth {
   public:
     static void setup() { // must be called from setup() once
       pinMode(PWMDAC_OUTPUT_PIN,OUTPUT);
+#ifdef PWMDAC_USE_TIMER3
+  // Set Timer 3 prescale factor to 1 (CSn2..1 = 001)
+  cbi(TCCR3B, CS32);
+  cbi(TCCR3B, CS31);
+  sbi(TCCR3B, CS30);
+
+       // Phase-correct PWM
+  sbi (TCCR3A, WGM30);
+  cbi (TCCR3A, WGM31);
+  cbi (TCCR3B, WGM32);
+  cbi (TCCR3B, WGM33);
+
+  // Connect PWM on Timer 3 to channel OC3A (COM3x1 = 1)
+   cbi(TCCR3A, COM3A0);
+   sbi(TCCR3A, COM3A1);
+   
+   sbi(TIMSK3,TOIE3); // Enable interrupt
+
+   sbi(TIFR3, TOV3);
+#endif
+
 #ifdef PWMDAC_USE_TIMER1
       // No prescaling
       sbi (TCCR1B, CS10);
