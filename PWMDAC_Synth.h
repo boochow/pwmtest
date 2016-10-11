@@ -27,7 +27,11 @@
 #define ARRAY256(f) {FX128(f,0),FX128(f,128)}
 
 #ifndef PWMDAC_OUTPUT_PIN
+#if defined(__AVR_ATmega32U4__)
+#define PWMDAC_OUTPUT_PIN 5
+#else
 #define PWMDAC_OUTPUT_PIN 3
+#endif
 #endif
 
 #ifndef PWMDAC_NOTE_A_FREQUENCY
@@ -280,9 +284,15 @@ class VoiceStatus {
 
 #if defined(__AVR_ATmega32U4__)
 
+#if PWMDAC_OUTPUT_PIN == 5
 #define PWMDAC_USE_TIMER3
 #define PWMDAC_OVF_vect TIMER3_OVF_vect
 #define PWMDAC_OCR OCR3A
+#elif PWMDAC_OUTPUT_PIN == 13
+#define PWMDAC_USE_TIMER4
+#define PWMDAC_OVF_vect TIMER4_OVF_vect
+#define PWMDAC_OCR OCR4A
+#endif
 
 #else
 
@@ -323,26 +333,6 @@ class PWMDACSynth {
   public:
     static void setup() { // must be called from setup() once
       pinMode(PWMDAC_OUTPUT_PIN,OUTPUT);
-#ifdef PWMDAC_USE_TIMER3
-  // Set Timer 3 prescale factor to 1 (CSn2..1 = 001)
-  cbi(TCCR3B, CS32);
-  cbi(TCCR3B, CS31);
-  sbi(TCCR3B, CS30);
-
-       // Phase-correct PWM
-  sbi (TCCR3A, WGM30);
-  cbi (TCCR3A, WGM31);
-  cbi (TCCR3B, WGM32);
-  cbi (TCCR3B, WGM33);
-
-  // Connect PWM on Timer 3 to channel OC3A (COM3x1 = 1)
-   cbi(TCCR3A, COM3A0);
-   sbi(TCCR3A, COM3A1);
-   
-   sbi(TIMSK3,TOIE3); // Enable interrupt
-
-   sbi(TIFR3, TOV3);
-#endif
 
 #ifdef PWMDAC_USE_TIMER1
       // No prescaling
@@ -384,6 +374,48 @@ class PWMDACSynth {
       sbi (TCCR2A, COM2B1);
 #endif
       sbi(TIMSK2,TOIE2); // Enable interrupt
+#endif
+
+#ifdef PWMDAC_USE_TIMER3
+  // Set Timer 3 prescale factor to 1 (CSn2..1 = 001)
+  cbi(TCCR3B, CS32);
+  cbi(TCCR3B, CS31);
+  sbi(TCCR3B, CS30);
+
+       // Phase-correct PWM
+  sbi (TCCR3A, WGM30);
+  cbi (TCCR3A, WGM31);
+  cbi (TCCR3B, WGM32);
+  cbi (TCCR3B, WGM33);
+
+  // Connect PWM on Timer 3 to channel OC3A (COM3x1 = 1)
+   cbi(TCCR3A, COM3A0);
+   sbi(TCCR3A, COM3A1);
+   
+   sbi(TIMSK3,TOIE3); // Enable interrupt
+
+   sbi(TIFR3, TOV3);
+#endif
+
+#ifdef PWMDAC_USE_TIMER4
+  // Set Timer 3 prescale factor to 1 (CSn2..1 = 001)
+  cbi(TCCR4B, CS43);
+  cbi(TCCR4B, CS42);
+  cbi(TCCR4B, CS41);
+  sbi(TCCR4B, CS40);
+
+       // Phase-correct PWM
+  sbi(TCCR4A, PWM4A);
+  sbi(TCCR4D, WGM40);
+  cbi(TCCR4D, WGM41);
+
+  // Connect PWM on Timer 3 to channel OC3A (COM3x1 = 1)
+  cbi(TCCR4A, COM4A1);
+  sbi(TCCR4A, COM4A0);
+   
+   sbi(TIMSK4,TOIE4); // Enable interrupt
+
+   sbi(TIFR4, TOV4);
 #endif
     }
 #define EACH_VOICE(p) for(VoiceStatus *(p)=voices; (p)<= voices + (PWMDAC_POLYPHONY - 1); (p)++)

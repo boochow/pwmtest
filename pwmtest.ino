@@ -1,7 +1,7 @@
 #include "Arduboy2.h"
 
-#define PWMDAC_OUTPUT_PIN 5
-#define PWMDAC_OUTPUT_PIN2 13
+#define PWMDAC_OUTPUT_PIN 13
+#define PWMDAC_OUTPUT_PIN2 5
 
 #include "PWMDAC_Synth.h"
 
