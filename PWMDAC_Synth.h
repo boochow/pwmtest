@@ -398,24 +398,24 @@ class PWMDACSynth {
 #endif
 
 #ifdef PWMDAC_USE_TIMER4
-  // Set Timer 3 prescale factor to 1 (CSn2..1 = 001)
+  // Set Timer 4 prescale factor to 1 (CS43..1 = 0001)
   cbi(TCCR4B, CS43);
   cbi(TCCR4B, CS42);
   cbi(TCCR4B, CS41);
   sbi(TCCR4B, CS40);
 
-       // Phase-correct PWM
+  // Phase-correct PWM
   sbi(TCCR4A, PWM4A);
   sbi(TCCR4D, WGM40);
   cbi(TCCR4D, WGM41);
 
-  // Connect PWM on Timer 3 to channel OC3A (COM3x1 = 1)
+  // Connect PWM on Timer 4 to channel OC4A (COM4x1..0 = 10)
   cbi(TCCR4A, COM4A1);
   sbi(TCCR4A, COM4A0);
    
-   sbi(TIMSK4,TOIE4); // Enable interrupt
+  sbi(TIMSK4,TOIE4); // Enable interrupt
 
-   sbi(TIFR4, TOV4);
+  sbi(TIFR4, TOV4);
 #endif
     }
 #define EACH_VOICE(p) for(VoiceStatus *(p)=voices; (p)<= voices + (PWMDAC_POLYPHONY - 1); (p)++)
